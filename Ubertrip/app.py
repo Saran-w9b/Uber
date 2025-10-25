@@ -31,7 +31,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---- STATIC DATA PATH ----
-DATA_PATH = "Uber-Jan-Feb-FOIL.csv"  # put your static CSV here
+DATA_PATH = "Ubertrip/Uber-Jan-Feb-FOIL.csv"  # put your static CSV here
 
 # ---- HELPERS ----
 @st.cache_data
@@ -328,5 +328,6 @@ else:
 
 st.markdown("---")
 st.caption("Tip: This simple window-based ML approach is a good baseline. For production forecasting consider time-series specific models (ARIMA, Prophet) or sequence models (LSTM) and careful cross-validation like TimeSeriesSplit.")
+
 
 
