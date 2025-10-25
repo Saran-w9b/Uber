@@ -37,24 +37,43 @@ DATA_PATH = "Ubertrip/Uber-Jan-Feb-FOIL.csv"  # put your static CSV here
 @st.cache_data
 def load_and_prepare(path):
     df = pd.read_csv(path)
-    # Accept multiple possible datetime column names
+
+    # ---- Identify datetime column ----
     datetime_col = None
     for c in df.columns:
         if 'date' in c.lower() or 'time' in c.lower():
             datetime_col = c
             break
     if datetime_col is None:
-        raise ValueError("No datetime-like column found in CSV. Ensure a 'Date/Time' column exists.")
-    # parse datetimes
+        raise ValueError("No datetime-like column found in CSV (expected something like 'date').")
+
+    # Convert to datetime
     df[datetime_col] = pd.to_datetime(df[datetime_col], errors='coerce')
     df = df.dropna(subset=[datetime_col]).copy()
     df = df.sort_values(datetime_col).reset_index(drop=True)
-    # Normalize expected columns: if 'Base' or 'base' present
-    if 'Base' not in df.columns and 'base' in df.columns:
-        df.rename(columns={'base': 'Base'}, inplace=True)
-    # Resample to hourly counts
+
+    # ---- Pick a count/target column ----
+    count_col = None
+    for c in df.columns:
+        if c.lower() in ['base', 'id', 'tripid', 'trip_id', 'dispatching_base_num', 'trips', 'active_vehicles']:
+            count_col = c
+            break
+    if count_col is None:
+        # fallback to the first non-datetime column
+        possible_cols = [c for c in df.columns if c != datetime_col]
+        count_col = possible_cols[0] if possible_cols else datetime_col
+
+    # ---- Build a daily or hourly time series ----
     df = df.set_index(datetime_col)
-    hourly = df['Base'].resample('H').count().rename('Count').to_frame()
+    freq = 'H' if df.index.inferred_freq != 'D' else 'D'
+
+    # If the selected column is numeric, aggregate by sum
+    if pd.api.types.is_numeric_dtype(df[count_col]):
+        hourly = df[count_col].resample(freq).sum().rename('Count').to_frame()
+    else:
+        # Otherwise, just count entries per time period
+        hourly = df[count_col].resample(freq).count().rename('Count').to_frame()
+
     hourly.index.name = 'Date'
     hourly = hourly.reset_index()
     return hourly
@@ -309,3 +328,4 @@ else:
 
 st.markdown("---")
 st.caption("Tip: This simple window-based ML approach is a good baseline. For production forecasting consider time-series specific models (ARIMA, Prophet) or sequence models (LSTM) and careful cross-validation like TimeSeriesSplit.")
+
