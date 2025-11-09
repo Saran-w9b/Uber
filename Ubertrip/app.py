@@ -18,7 +18,7 @@ except Exception:
     XGBOOST_AVAILABLE = False
 
 # ---- PAGE CONFIG & STYLE ----
-st.set_page_config(page_title="Uber Trips Forecast — Clean UI", layout="wide")
+st.set_page_config(page_title="Uber Trips Forecast", layout="wide")
 sns.set_style("whitegrid")
 
 # small CSS for light, clean cards
@@ -104,8 +104,8 @@ def compute_metrics(y_true, y_pred):
     return {'MAE': mae, 'MSE': mse, 'RMSE': rmse, 'R2': r2, 'MAPE_%': mape}
 
 # ---- MAIN APP LAYOUT ----
-st.title("🚕 Uber Trips Forecast — Clean UI")
-st.markdown("A lightweight app to prepare hourly trip counts, train time-window models, and inspect performance. Put your static CSV in the same folder as `app.py` and run `streamlit run app.py`.")
+st.title("🚕 Uber Trips Forecast")
+st.markdown("A lightweight app to prepare hourly trip counts, train time-window models, and inspect performance.")
 
 # Left column: controls
 left, right = st.columns((1, 2))
@@ -328,6 +328,7 @@ else:
 
 st.markdown("---")
 st.caption("Tip: This simple window-based ML approach is a good baseline. For production forecasting consider time-series specific models (ARIMA, Prophet) or sequence models (LSTM) and careful cross-validation like TimeSeriesSplit.")
+
 
 
 
